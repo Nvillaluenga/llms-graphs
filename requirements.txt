@@ -1,0 +1,2 @@
+langchian==0.2.6
+langchain-google-genai==1.0.7
