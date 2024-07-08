@@ -1,13 +1,12 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from typing import Callable, List, Any, Dict, Union
 from langchain_core.language_models.chat_models import BaseChatModel
 
 
-class BaseNode:
+class BaseNode(ABC):
     @abstractmethod
     def execute(self, context: Dict[str, Any]):
-        inputs: Dict[str, str] = context['input']
         pass
 
 class CallableNode(BaseNode):

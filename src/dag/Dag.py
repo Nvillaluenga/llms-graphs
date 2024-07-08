@@ -1,5 +1,5 @@
 from src.nodes import Node, CallableNode, BaseNode
-from src.vertex import BaseVertex, Vertex
+from src.vertex import BaseVertex, Vertex, PassVertex, ConditionVertex
 from typing import Union, List, Any, Dict, Tuple
 
 def find_key_by_object(d, target_object):
@@ -22,9 +22,12 @@ class DAG:
         self.graph[name] = []
         self.nodes[name] = node
 
-    def add_vertex(self, vertex: Vertex, node_from: Union[str, BaseNode], node_to: Union[str, BaseNode]):
-        if callable(vertex):
-            vertex = BaseVertex(f=vertex)
+    def add_vertex(self, node_from: Union[str, BaseNode], node_to: Union[str, BaseNode], vertex: Vertex = None):
+        if (vertex == None):
+            vertex = PassVertex()
+        
+        elif callable(vertex):
+            vertex = ConditionVertex(condition_fuction=vertex)
         
         if isinstance(node_from, BaseNode):
             node_from = find_key_by_object(self.nodes, node_from)
@@ -48,7 +51,6 @@ class DAG:
         outputs = {}
         node_execution_list, dependency_map = self.get_topological_sort()
         for node_name in node_execution_list:
-
             node_context = self._get_context_for_node(node_name=node_name, general_context=general_context, dependency_map=dependency_map, outputs=outputs)
             node = self.nodes[node_name]
             node_result = node.execute(node_context)
@@ -70,7 +72,8 @@ class DAG:
         node_context = {} | general_context
         for dependency_node, dependency_vertex in dependencies:
             dependency_node_output = outputs[dependency_node]
-            node_partial_input = dependency_vertex.execute(dependency_node_output)
-            node_context = node_context | node_partial_input
+            if dependency_vertex.condition(dependency_node_output):
+                node_partial_input = dependency_vertex.execute(dependency_node_output)
+                node_context = node_context | node_partial_input
         
         return node_context

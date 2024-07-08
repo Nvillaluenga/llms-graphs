@@ -4,6 +4,6 @@ test repo to learn and try to implement a system to execute llms as a DAG graph 
 # Plans
 
  - ~~Structure repo~~
- - Make graph use node features
- - Make graph use vertex featuers
+ - ~~Make graph use node features~~
+ - ~~Make graph use vertex featuers~~
  - Do a full test of graphs with LLM Features

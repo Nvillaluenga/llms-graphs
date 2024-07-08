@@ -1,4 +1,5 @@
 from src.nodes import LLMFeature, LLMNode, CallableNode
+from src.vertex import ConditionVertex, ExecuteVertex, FullVertex
 from src.dag import DAG
 
 def main() -> None:
@@ -34,14 +35,16 @@ def main() -> None:
     dag.add_node("D", lambda x: f"node D with input {x}")
     dag.add_node("E", lambda x: f"node E with input {x}")
 
-    dag.add_vertex(lambda x: "llm to callable", llm_node, callable_node)
-    dag.add_vertex(lambda x: "callable to A", callable_node, "A")
-
-    dag.add_vertex(lambda x: "A to B", 'A', 'B')
-    dag.add_vertex(lambda x: "A to C", 'A', 'C')
-    dag.add_vertex(lambda x: "B to D", 'B', 'D')
-    dag.add_vertex(lambda x: "C to D", 'C', 'D')
-    dag.add_vertex(lambda x: "C to E", 'C', 'E')
+    dag.add_vertex(llm_node, callable_node)
+    dag.add_vertex(callable_node, "A", lambda x: True)
+    condition_vertex = ConditionVertex(lambda x: True)
+    execute_vertex = ExecuteVertex(lambda x: x | {"vertex": True})
+    full_vertex = FullVertex(condition_fuction= lambda x: True, execute_function= lambda x: x | {"full_vertex": True})
+    dag.add_vertex('A', 'B', condition_vertex)
+    dag.add_vertex('A', 'C', execute_vertex)
+    dag.add_vertex('B', 'D', full_vertex)
+    dag.add_vertex('C', 'D')
+    dag.add_vertex('C', 'E', lambda x: False)
     # dag.add_vertex(lambda x: True, 'D', 'E')
 
     # Perform Topological Sort
