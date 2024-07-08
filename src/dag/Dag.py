@@ -10,6 +10,7 @@ def find_key_by_object(d, target_object):
 
 class DAG:
     graph: Dict[str, List[Tuple[str, BaseVertex]]]
+    nodes: Dict[str, BaseNode]
 
     def __init__(self):
         self.nodes = {}
@@ -32,19 +33,44 @@ class DAG:
 
 
         self.graph[node_from].append((node_to, vertex))
+
+    def get_topological_sort(self) -> Tuple[List[str], Dict[str, List[Tuple[str, BaseVertex]]]]:
+        visited = set()
+        stack = []
+        dependency_map = {}
+        for node in self.graph:
+            if node not in visited:
+                self._topological_sort_util(node, visited, stack, dependency_map)
+        stack.reverse()
+        return stack, dependency_map
     
-    def topological_sort_util(self, node: str, vertex: BaseVertex, visited: set, stack: list):
+    def execute(self, general_context: Dict[str, Any]):
+        outputs = {}
+        node_execution_list, dependency_map = self.get_topological_sort()
+        for node_name in node_execution_list:
+
+            node_context = self._get_context_for_node(node_name=node_name, general_context=general_context, dependency_map=dependency_map, outputs=outputs)
+            node = self.nodes[node_name]
+            node_result = node.execute(node_context)
+            outputs[node_name] = node_result
+        
+        return node_execution_list, outputs
+    
+    # Utils functions
+    def _topological_sort_util(self, node: str, visited: set, stack: list, dependency_map: dict):
         visited.add(node)
         for (neighbor, vertex) in self.graph[node]:
             if neighbor not in visited:
-                self.topological_sort_util(neighbor, vertex, visited, stack)
-        stack.append((node, vertex))
+                self._topological_sort_util(neighbor, visited, stack, dependency_map)
+            dependency_map[neighbor] = dependency_map.get(neighbor, []) + [(node, vertex)]
+        stack.append(node)
 
-    def topological_sort(self):
-        visited = set()
-        stack = []
-        for node in self.graph:
-            if node not in visited:
-                self.topological_sort_util(node, None, visited, stack)
-        stack.reverse()  # Reverse the stack to get the topological order
-        return stack
+    def _get_context_for_node(self, node_name: str, general_context: Dict[str, Any], dependency_map: Dict[str, List[Tuple[str, BaseVertex]]], outputs: Dict[str, Dict[str, Any]]):
+        dependencies = dependency_map.get(node_name, [])
+        node_context = {} | general_context
+        for dependency_node, dependency_vertex in dependencies:
+            dependency_node_output = outputs[dependency_node]
+            node_partial_input = dependency_vertex.execute(dependency_node_output)
+            node_context = node_context | node_partial_input
+        
+        return node_context

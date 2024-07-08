@@ -2,11 +2,21 @@ from src.nodes import LLMFeature, LLMNode, CallableNode
 from src.dag import DAG
 
 def main() -> None:
-    feature: LLMFeature = LLMFeature(
+    feature_1: LLMFeature = LLMFeature(
         name='something',
-        prompt_template='What is {{a}} + {{b}}?'
+        prompt_template='What is {a} + {b}? 1'
     )
-    llm_node: LLMNode = LLMNode(features=[feature], model = None)
+    feature_2: LLMFeature = LLMFeature(
+        name='something',
+        prompt_template='What is {a} + {b}? 0',
+        priority=0
+    )
+    feature_3: LLMFeature = LLMFeature(
+        name='something',
+        prompt_template='What is {a} + {b}? 3',
+        priority=3
+    )
+    llm_node: LLMNode = LLMNode(features=[feature_1, feature_2, feature_3], model = None)
 
     llm_node.execute({"a": 1, "b": 2})
 
@@ -18,25 +28,26 @@ def main() -> None:
 
     dag.add_node("llm_node", llm_node)
     dag.add_node("callable_node", callable_node)
-    dag.add_node("A", lambda x: True)
-    dag.add_node("B", lambda x: True)
-    dag.add_node("C", lambda x: True)
-    dag.add_node("D", lambda x: True)
-    dag.add_node("E", lambda x: True)
+    dag.add_node("A", lambda x: f"node A with input {x}")
+    dag.add_node("B", lambda x: f"node B with input {x}")
+    dag.add_node("C", lambda x: f"node C with input {x}")
+    dag.add_node("D", lambda x: f"node D with input {x}")
+    dag.add_node("E", lambda x: f"node E with input {x}")
 
-    dag.add_vertex(lambda x: True, llm_node, callable_node)
-    dag.add_vertex(lambda x: True, callable_node, "A")
+    dag.add_vertex(lambda x: "llm to callable", llm_node, callable_node)
+    dag.add_vertex(lambda x: "callable to A", callable_node, "A")
 
-    dag.add_vertex(lambda x: True, 'A', 'B')
-    dag.add_vertex(lambda x: True, 'A', 'C')
-    dag.add_vertex(lambda x: True, 'B', 'D')
-    dag.add_vertex(lambda x: True, 'C', 'D')
-    dag.add_vertex(lambda x: True, 'C', 'E')
+    dag.add_vertex(lambda x: "A to B", 'A', 'B')
+    dag.add_vertex(lambda x: "A to C", 'A', 'C')
+    dag.add_vertex(lambda x: "B to D", 'B', 'D')
+    dag.add_vertex(lambda x: "C to D", 'C', 'D')
+    dag.add_vertex(lambda x: "C to E", 'C', 'E')
     # dag.add_vertex(lambda x: True, 'D', 'E')
 
     # Perform Topological Sort
-    topological_order = dag.topological_sort()
-    print("Topological Sort of the nodes:")
-    print(topological_order)
+    l, map = dag.execute({"a": 1, "b": 2})
+    print(l)
+    print(map)
+    
 
 main()

@@ -6,7 +6,7 @@ class BaseVertex():
         self.f = f
 
     def execute(self, context: Dict[str, Any]):
-        print("in vertex execute")
-        return self.f(context)
+        result = self.f(context)
+        return result if isinstance(result, dict) else { "text": result }
     
 Vertex = Union[Callable[[Dict], Dict], BaseVertex]
