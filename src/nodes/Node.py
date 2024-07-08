@@ -9,21 +9,25 @@ class BaseNode(ABC):
     def execute(self, context: Dict[str, Any]):
         pass
 
+
 class CallableNode(BaseNode):
     f: Callable
+
     def __init__(self, f: Callable[[Dict], Dict]):
         self.f = f
 
     def execute(self, context: Dict[str, Any]):
         # This is a space for doing mapping, checking, or other things
         result = self.f(context)
-        return result if isinstance(result, dict) else { "text": result }
+        return result if isinstance(result, dict) else {"text": result}
+
 
 @dataclass
 class LLMFeature:
     name: str
     prompt_template: str
     priority: int = 1
+
 
 class LLMNode(BaseNode):
     features: List[LLMFeature]
@@ -32,7 +36,7 @@ class LLMNode(BaseNode):
 
     def __init__(self, features: List[LLMFeature], model: BaseChatModel):
         self.features = features
-        self.features.sort(key=lambda x: x.priority) 
+        self.features.sort(key=lambda x: x.priority)
 
         self.model = model
 
@@ -40,13 +44,17 @@ class LLMNode(BaseNode):
         llm_input = ""
         for feature in self.features:
             try:
-                llm_input += self.feature_separator + feature.prompt_template.format(**context)
+                llm_input += (
+                    self.feature_separator
+                    + feature.prompt_template.format(**context)
+                )
             except KeyError as e:
-                print(f"Couldn't load feature \"{feature.name}\" with template \"{feature.prompt_template}\" because of missing key \"{e}\"")
+                print(
+                    f'Couldn\'t load feature "{feature.name}" with template "{feature.prompt_template}" because of missing key "{e}"'
+                )
 
-        # result = self.model.invoke(llm_input)
-        result = llm_input
-        return result if isinstance(result, dict) else { "text": result }
+        result = self.model.invoke(llm_input)
+        return result.dict()
 
 
 Node = Union[Callable[[Dict], Dict], BaseNode]
