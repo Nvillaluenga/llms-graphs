@@ -13,3 +13,9 @@ test repo to learn and try to implement a system to execute llms as a DAG graph 
  - Add a feature engineering part to discard noisy features that doesn't add nothing
  - Add a prompt improving part
  - Add a LLM independent part
+
+ Change of plans / new plans
+
+ - Generate default test metrics using json file
+ - Test whole graph execution
+ - Integrate with lang graph? maybe discard my own graph execution?
