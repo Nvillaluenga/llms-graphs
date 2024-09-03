@@ -3,3 +3,4 @@ langchain-google-genai==1.0.7
 langchain-openai==0.1.14
 rouge_score==0.1.2
 sacrebleu==2.4.2
+openai==1.35.10
