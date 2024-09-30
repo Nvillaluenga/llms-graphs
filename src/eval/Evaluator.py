@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from src.test.Metric import Metric
-from src.test.TestCase import TestCase
+from src.eval.Metric import Metric
+from src.eval.TestCase import TestCase
 from typing import Dict, List
 import numpy as np
 
@@ -10,11 +10,13 @@ class Evaluator(ABC):
         self.metrics = metrics if metrics else []
 
     @abstractmethod
-    def evaluate(self, test_case: TestCase) -> float:
+    def evaluate(self, test_case: TestCase, instruction: str = None) -> float:
         pass
 
     @abstractmethod
-    def batch_evaluate(self, test_case: List[TestCase]) -> List[float]:
+    def batch_evaluate(
+        self, test_case: List[TestCase], instruction: str = None
+    ) -> List[float]:
         pass
 
 
