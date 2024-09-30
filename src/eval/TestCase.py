@@ -6,4 +6,4 @@ from typing import Dict
 class TestCase:
     input_vars: Dict[str, str]
     expected_output: str
-    generated_output: str
+    generated_output: str = None
